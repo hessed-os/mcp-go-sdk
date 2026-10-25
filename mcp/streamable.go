@@ -52,6 +52,11 @@ type StreamableHTTPHandler struct {
 
 	mu       sync.Mutex
 	sessions map[string]*sessionInfo // keyed by session ID
+
+	// checked is serveHTTP behind the bearer token check of
+	// opts.TokenVerifier, built once by NewStreamableHTTPHandler; nil when
+	// there is no verifier.
+	checked http.Handler
 }
 
 type sessionInfo struct {
@@ -217,6 +222,20 @@ type StreamableHTTPOptions struct {
 	// Requests using older protocol versions (including those routed through
 	// the allowsessionsinstateless compatibility path) are unaffected.
 	PropagateRequestCancellation bool
+
+	// TokenVerifier, when set, makes the handler check the bearer token of
+	// every request before doing anything else, exactly as
+	// [auth.RequireBearerToken] would: a missing or rejected token is answered
+	// with 401 (or 403) and a WWW-Authenticate header built from TokenOptions,
+	// and an accepted token's info reaches tool calls as
+	// [RequestExtra.TokenInfo]. It lets a server require OAuth without
+	// wrapping the handler in middleware.
+	TokenVerifier auth.TokenVerifier
+
+	// TokenOptions configure the check made with TokenVerifier, such as the
+	// resource metadata URL announced in WWW-Authenticate. They are ignored
+	// when TokenVerifier is nil.
+	TokenOptions *auth.RequireBearerTokenOptions
 }
 
 // DefaultMaxRequestBodyBytes is the default value used for
@@ -241,6 +260,9 @@ func NewStreamableHTTPHandler(getServer func(*http.Request) *Server, opts *Strea
 
 	if h.opts.MaxRequestBodyBytes == 0 {
 		h.opts.MaxRequestBodyBytes = DefaultMaxRequestBodyBytes
+	}
+	if h.opts.TokenVerifier != nil {
+		h.checked = auth.RequireBearerToken(h.opts.TokenVerifier, h.opts.TokenOptions)(http.HandlerFunc(h.serveHTTP))
 	}
 
 	return h
@@ -314,6 +336,14 @@ func writeJSONRPCError(w http.ResponseWriter, status int, id jsonrpc.ID, jerr *j
 }
 
 func (h *StreamableHTTPHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	if h.checked != nil {
+		h.checked.ServeHTTP(w, req)
+		return
+	}
+	h.serveHTTP(w, req)
+}
+
+func (h *StreamableHTTPHandler) serveHTTP(w http.ResponseWriter, req *http.Request) {
 	// DNS rebinding protection: auto-enabled for localhost servers.
 	// See: https://modelcontextprotocol.io/specification/2025-11-25/basic/security_best_practices#local-mcp-server-compromise
 	if !h.opts.DisableLocalhostProtection {

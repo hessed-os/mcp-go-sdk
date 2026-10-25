@@ -1249,6 +1249,74 @@ func TestTokenInfo(t *testing.T) {
 	}
 }
 
+// TestTokenVerifierOption checks that StreamableHTTPOptions.TokenVerifier does
+// what auth.RequireBearerToken does around the handler: a request without a
+// valid token gets 401 with the resource metadata in WWW-Authenticate, and an
+// accepted token reaches the tool as RequestExtra.TokenInfo.
+func TestTokenVerifierOption(t *testing.T) {
+	ctx := context.Background()
+
+	whoAmI := func(ctx context.Context, req *CallToolRequest, _ struct{}) (*CallToolResult, any, error) {
+		return &CallToolResult{Content: []Content{&TextContent{Text: req.Extra.TokenInfo.UserID}}}, nil, nil
+	}
+	server := NewServer(testImpl, nil)
+	AddTool(server, &Tool{Name: "whoAmI", Description: "return the token's user"}, whoAmI)
+
+	verifier := func(ctx context.Context, token string, req *http.Request) (*auth.TokenInfo, error) {
+		if token != "test-token" {
+			return nil, auth.ErrInvalidToken
+		}
+		return &auth.TokenInfo{UserID: "owner:test", Expiration: time.Date(5000, 1, 2, 3, 4, 5, 0, time.UTC)}, nil
+	}
+	const metadataURL = "https://example.com/.well-known/oauth-protected-resource"
+	handler := NewStreamableHTTPHandler(func(req *http.Request) *Server { return server }, &StreamableHTTPOptions{
+		TokenVerifier: verifier,
+		TokenOptions:  &auth.RequireBearerTokenOptions{ResourceMetadataURL: metadataURL},
+	})
+	httpServer := httptest.NewServer(mustNotPanic(t, handler))
+	defer httpServer.Close()
+
+	for _, token := range []string{"", "wrong-token"} {
+		req, err := http.NewRequest(http.MethodPost, httpServer.URL, strings.NewReader(`{"jsonrpc":"2.0","id":1,"method":"ping"}`))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json, text/event-stream")
+		if token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusUnauthorized {
+			t.Errorf("token %q: status %d, want 401", token, resp.StatusCode)
+		}
+		if got, want := resp.Header.Get("WWW-Authenticate"), `Bearer resource_metadata="`+metadataURL+`"`; got != want {
+			t.Errorf("token %q: WWW-Authenticate %q, want %q", token, got, want)
+		}
+	}
+
+	transport := &StreamableClientTransport{
+		Endpoint:     httpServer.URL,
+		OAuthHandler: &mockOAuthHandler{token: &oauth2.Token{AccessToken: "test-token"}},
+	}
+	session, err := NewClient(testImpl, nil).Connect(ctx, transport, nil)
+	if err != nil {
+		t.Fatalf("client.Connect() failed: %v", err)
+	}
+	defer session.Close()
+	res, err := session.CallTool(ctx, &CallToolParams{Name: "whoAmI"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tc, ok := res.Content[0].(*TextContent); !ok || tc.Text != "owner:test" {
+		t.Errorf("tool saw %v, want the token's user owner:test", res.Content[0])
+	}
+}
+
 // errTestAuthorizeFailed is a sentinel error returned by
 // retrieveErrorOAuthHandler.Authorize().
 var errTestAuthorizeFailed = errors.New("authorize intentionally failed for test")
