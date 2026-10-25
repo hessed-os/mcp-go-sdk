@@ -110,6 +110,19 @@ type ServerOptions struct {
 	// Function called when a client session unsubscribes from a resource.
 	UnsubscribeHandler func(context.Context, *UnsubscribeRequest) error
 
+	// ListEventsHandler, SubscribeEventHandler and UnsubscribeEventHandler
+	// serve the MCP events extension: they answer "events/list",
+	// "events/subscribe" and "events/unsubscribe", and setting them makes the
+	// server advertise the "events" capability. Set all three or none.
+	//
+	// The SDK only decodes requests and encodes results. Storing
+	// subscriptions and delivering events (for example, webhook POSTs) is the
+	// handlers' job. An error the handlers return reaches the client as a
+	// JSON-RPC error; return a [*jsonrpc.Error] to choose its code and data.
+	ListEventsHandler       func(context.Context, *ServerRequest[*ListEventsParams]) (*ListEventsResult, error)
+	SubscribeEventHandler   func(context.Context, *ServerRequest[*SubscribeEventParams]) (*SubscribeEventResult, error)
+	UnsubscribeEventHandler func(context.Context, *ServerRequest[*UnsubscribeEventParams]) (*UnsubscribeEventResult, error)
+
 	// Capabilities optionally configures the server's default capabilities,
 	// before any capabilities are inferred from other configuration or server
 	// features.
@@ -124,9 +137,9 @@ type ServerOptions struct {
 	// "tools", "prompts", and "resources" capabilities are automatically added when
 	// tools, prompts, or resources are added to the server (for example, via
 	// [Server.AddPrompt]), with default value `{"listChanged":true}`. Similarly,
-	// if the [ClientOptions.SubscribeHandler] or
-	// [ClientOptions.CompletionHandler] are set, the inferred capabilities are
-	// adjusted accordingly.
+	// if the [ServerOptions.SubscribeHandler],
+	// [ServerOptions.CompletionHandler] or [ServerOptions.ListEventsHandler]
+	// are set, the inferred capabilities are adjusted accordingly.
 	//
 	// Any non-nil field in Capabilities overrides the inferred value.
 	// For example:
@@ -229,6 +242,7 @@ func NewServer(impl *Implementation, options *ServerOptions) *Server {
 	if opts.UnsubscribeHandler != nil && opts.SubscribeHandler == nil {
 		panic("UnsubscribeHandler requires SubscribeHandler")
 	}
+	checkEventHandlers(&opts)
 
 	if opts.GetSessionID == nil {
 		opts.GetSessionID = rand.Text
@@ -698,6 +712,13 @@ func (s *Server) capabilities() *ServerCapabilities {
 	if s.opts.CompletionHandler != nil {
 		if caps.Completions == nil {
 			caps.Completions = &CompletionCapabilities{}
+		}
+	}
+
+	// Augment with events capability if the events handlers are set.
+	if s.opts.ListEventsHandler != nil {
+		if caps.Events == nil {
+			caps.Events = &EventsCapabilities{}
 		}
 	}
 
@@ -1888,6 +1909,9 @@ var serverMethodInfos = map[string]methodInfo{
 	notificationInitialized:      newServerMethodInfo(serverSessionMethod((*ServerSession).initialized), notification|missingParamsOK),
 	notificationRootsListChanged: newServerMethodInfo(serverMethod((*Server).callRootsListChangedHandler), notification|missingParamsOK),
 	notificationProgress:         newServerMethodInfo(serverSessionMethod((*ServerSession).callProgressNotificationHandler), notification),
+	methodListEvents:             newServerMethodInfo(serverMethod((*Server).listEvents), missingParamsOK),
+	methodSubscribeEvent:         newServerMethodInfo(serverMethod((*Server).subscribeEvent), 0),
+	methodUnsubscribeEvent:       newServerMethodInfo(serverMethod((*Server).unsubscribeEvent), 0),
 }
 
 // initializeMethodInfo handles the workaround for #607: we must set

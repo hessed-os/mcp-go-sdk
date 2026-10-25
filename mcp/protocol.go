@@ -2227,6 +2227,11 @@ type Implementation struct {
 // CompletionCapabilities describes the server's support for argument autocompletion.
 type CompletionCapabilities struct{}
 
+// EventsCapabilities describes the server's support for the MCP events
+// extension (events/list, events/subscribe and events/unsubscribe). It has no
+// settings and is advertised as "events": {}.
+type EventsCapabilities struct{}
+
 // LoggingCapabilities describes the server's support for sending log messages to the client.
 //
 // Deprecated: the logging feature is deprecated as of protocol version
@@ -2275,6 +2280,8 @@ type ServerCapabilities struct {
 	// Completions is present if the server supports argument autocompletion
 	// suggestions.
 	Completions *CompletionCapabilities `json:"completions,omitempty"`
+	// Events is present if the server serves the MCP events extension.
+	Events *EventsCapabilities `json:"events,omitempty"`
 	// Logging is present if the server supports log messages.
 	//
 	// Deprecated: the logging feature is deprecated as of protocol version
@@ -2311,6 +2318,7 @@ func (c *ServerCapabilities) clone() *ServerCapabilities {
 	cp.Experimental = maps.Clone(c.Experimental)
 	cp.Extensions = maps.Clone(c.Extensions)
 	cp.Completions = shallowClone(c.Completions)
+	cp.Events = shallowClone(c.Events)
 	cp.Logging = shallowClone(c.Logging)
 	cp.Prompts = shallowClone(c.Prompts)
 	cp.Resources = shallowClone(c.Resources)
