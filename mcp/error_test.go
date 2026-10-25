@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
+	"github.com/hessed-os/mcp-go-sdk/jsonrpc"
 )
 
 // TestServerErrors validates that the server returns appropriate error codes

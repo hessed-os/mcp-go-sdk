@@ -13,8 +13,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/modelcontextprotocol/go-sdk/internal/json"
-	"github.com/modelcontextprotocol/go-sdk/internal/mcpgodebug"
+	"github.com/hessed-os/mcp-go-sdk/internal/json"
+	"github.com/hessed-os/mcp-go-sdk/internal/mcpgodebug"
 )
 
 // nomethodnotfoundcodeinerror is a compatibility parameter that restores the

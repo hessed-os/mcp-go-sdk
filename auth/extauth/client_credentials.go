@@ -13,9 +13,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/modelcontextprotocol/go-sdk/auth"
-	"github.com/modelcontextprotocol/go-sdk/internal/authutil"
-	"github.com/modelcontextprotocol/go-sdk/oauthex"
+	"github.com/hessed-os/mcp-go-sdk/auth"
+	"github.com/hessed-os/mcp-go-sdk/internal/authutil"
+	"github.com/hessed-os/mcp-go-sdk/oauthex"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )

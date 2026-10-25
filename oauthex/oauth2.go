@@ -19,8 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/modelcontextprotocol/go-sdk/internal/json"
-	"github.com/modelcontextprotocol/go-sdk/internal/util"
+	"github.com/hessed-os/mcp-go-sdk/internal/json"
+	"github.com/hessed-os/mcp-go-sdk/internal/util"
 )
 
 const maxDiscoveryRedirects = 10

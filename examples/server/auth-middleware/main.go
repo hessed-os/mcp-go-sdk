@@ -18,9 +18,9 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/modelcontextprotocol/go-sdk/auth"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/modelcontextprotocol/go-sdk/oauthex"
+	"github.com/hessed-os/mcp-go-sdk/auth"
+	"github.com/hessed-os/mcp-go-sdk/mcp"
+	"github.com/hessed-os/mcp-go-sdk/oauthex"
 )
 
 // This example demonstrates how to integrate auth.RequireBearerToken middleware

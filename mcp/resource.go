@@ -15,9 +15,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/modelcontextprotocol/go-sdk/internal/mcpgodebug"
-	"github.com/modelcontextprotocol/go-sdk/internal/util"
-	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
+	"github.com/hessed-os/mcp-go-sdk/internal/mcpgodebug"
+	"github.com/hessed-os/mcp-go-sdk/internal/util"
+	"github.com/hessed-os/mcp-go-sdk/jsonrpc"
 	"github.com/yosida95/uritemplate/v3"
 )
 

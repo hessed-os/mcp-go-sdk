@@ -23,11 +23,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/modelcontextprotocol/go-sdk/auth"
-	internaljson "github.com/modelcontextprotocol/go-sdk/internal/json"
-	"github.com/modelcontextprotocol/go-sdk/internal/jsonrpc2"
-	"github.com/modelcontextprotocol/go-sdk/internal/mcpgodebug"
-	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
+	"github.com/hessed-os/mcp-go-sdk/auth"
+	internaljson "github.com/hessed-os/mcp-go-sdk/internal/json"
+	"github.com/hessed-os/mcp-go-sdk/internal/jsonrpc2"
+	"github.com/hessed-os/mcp-go-sdk/internal/mcpgodebug"
+	"github.com/hessed-os/mcp-go-sdk/jsonrpc"
 )
 
 // nowrapinvalidparams is a compatibility parameter that restores the previous

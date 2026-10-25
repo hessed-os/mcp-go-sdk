@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/modelcontextprotocol/go-sdk/internal/oauthtest"
+	"github.com/hessed-os/mcp-go-sdk/internal/oauthtest"
 )
 
 func TestGetAuthServerMetadata(t *testing.T) {

@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/hessed-os/mcp-go-sdk/mcp"
 )
 
 // Define a context key for passing headers.

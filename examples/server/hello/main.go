@@ -11,7 +11,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/hessed-os/mcp-go-sdk/mcp"
 )
 
 func main() {

@@ -13,8 +13,8 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/modelcontextprotocol/go-sdk/auth"
-	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/hessed-os/mcp-go-sdk/auth"
+	"github.com/hessed-os/mcp-go-sdk/mcp"
 )
 
 var (

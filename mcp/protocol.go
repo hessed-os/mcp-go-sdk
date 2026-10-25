@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"maps"
 
-	internaljson "github.com/modelcontextprotocol/go-sdk/internal/json"
-	"github.com/modelcontextprotocol/go-sdk/internal/mcpgodebug"
+	internaljson "github.com/hessed-os/mcp-go-sdk/internal/json"
+	"github.com/hessed-os/mcp-go-sdk/internal/mcpgodebug"
 )
 
 // resultType indicates whether a result is complete or requires further input

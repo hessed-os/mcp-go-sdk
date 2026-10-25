@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/modelcontextprotocol/go-sdk/jsonrpc"
+	"github.com/hessed-os/mcp-go-sdk/jsonrpc"
 )
 
 func TestValidateRequestMeta(t *testing.T) {

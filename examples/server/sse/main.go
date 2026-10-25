@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/hessed-os/mcp-go-sdk/mcp"
 )
 
 var (
